@@ -1,14 +1,15 @@
-#include <stdio.h>
-void main(){
+#include<stdio.h>
+int main() {
     int n;
-    char arr[100];
-    printf("Enter the size of array: ");
-    scanf("%d",&n);
-    for(int i=0;i<n;i++){
+    printf("What size array do you want?: ");
+    scanf("%d", &n);
+    char arr[n];
+    
+    for (int i=0; i<n; i++){
         printf("Enter element %d: ", i+1);
-        scanf(" %c",&arr[i]);
+        scanf(" %c", &arr[i]);
     }
-    printf("The reversed order is: ")
+    printf("The reversed order is: ");
     for(int i=0;i<n;i++){
         printf("%c\t",arr[n-i-1]);
     }
