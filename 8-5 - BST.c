@@ -1,123 +1,165 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Node structure
 struct Node {
     int data;
     struct Node* left;
     struct Node* right;
 };
 
-// Create node
-struct Node* createNode(int val) {
-    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
-    temp->data = val;
-    temp->left = temp->right = NULL;
-    return temp;
+// Create new node
+struct Node* createNode(int data) {
+    struct Node* newNode = malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = newNode->right = NULL;
+    return newNode;
 }
 
-// INSERT
-struct Node* insert(struct Node* root, int val) {
+// ================= INSERT (ITERATIVE) =================
+struct Node* insert(struct Node* root, int data) {
+    struct Node* newNode = createNode(data);
+
     if (root == NULL)
-        return createNode(val);
+        return newNode;
 
-    if (val < root->data)
-        root->left = insert(root->left, val);
-    else if (val > root->data)
-        root->right = insert(root->right, val);
+    struct Node* parent = NULL;
+    struct Node* curr = root;
 
-    return root;
-}
+    while (curr != NULL) {
+        parent = curr;
 
-// SEARCH
-struct Node* search(struct Node* root, int key) {
-    if (root == NULL || root->data == key)
-        return root;
+        if (data < curr->data)
+            curr = curr->left;
+        else
+            curr = curr->right;
+    }
 
-    if (key < root->data)
-        return search(root->left, key);
+    if (data < parent->data)
+        parent->left = newNode;
     else
-        return search(root->right, key);
-}
+        parent->right = newNode;
 
-// Find minimum (used in delete)
-struct Node* findMin(struct Node* root) {
-    while (root->left != NULL)
-        root = root->left;
     return root;
 }
 
-// DELETE
+// ================= SEARCH (ITERATIVE) =================
+struct Node* search(struct Node* root, int key) {
+    struct Node* curr = root;
+
+    while (curr != NULL) {
+        if (key == curr->data)
+            return curr;
+
+        else if (key < curr->data)
+            curr = curr->left;
+        else
+            curr = curr->right;
+    }
+
+    return NULL;
+}
+
+// ================= DELETE (ITERATIVE) =================
 struct Node* deleteNode(struct Node* root, int key) {
-    if (root == NULL)
-        return root;
+    struct Node* parent = NULL;
+    struct Node* curr = root;
 
-    if (key < root->data)
-        root->left = deleteNode(root->left, key);
-    else if (key > root->data)
-        root->right = deleteNode(root->right, key);
-    else {
-        // Case 1: no child
-        if (root->left == NULL && root->right == NULL) {
-            free(root);
-            return NULL;
-        }
-        // Case 2: one child
-        else if (root->left == NULL) {
-            struct Node* temp = root->right;
-            free(root);
-            return temp;
-        }
-        else if (root->right == NULL) {
-            struct Node* temp = root->left;
-            free(root);
-            return temp;
-        }
-        // Case 3: two children
-        else {
-            struct Node* temp = findMin(root->right);
-            root->data = temp->data;
-            root->right = deleteNode(root->right, temp->data);
-        }
+    // find node
+    while (curr != NULL && curr->data != key) {
+        parent = curr;
+        if (key < curr->data)
+            curr = curr->left;
+        else
+            curr = curr->right;
     }
+
+    if (curr == NULL) {
+        printf("Value not found\n");
+        return root;
+    }
+
+    // Case 1 & 2: 0 or 1 child
+    if (curr->left == NULL || curr->right == NULL) {
+        struct Node* child;
+
+        if (curr->left != NULL)
+            child = curr->left;
+        else
+            child = curr->right;
+
+        if (parent == NULL) { // deleting root
+            free(curr);
+            return child;
+        }
+
+        if (parent->left == curr)
+            parent->left = child;
+        else
+            parent->right = child;
+
+        free(curr);
+    }
+    // Case 3: 2 children
+    else {
+        struct Node* succParent = curr;
+        struct Node* succ = curr->right;
+
+        // find inorder successor
+        while (succ->left != NULL) {
+            succParent = succ;
+            succ = succ->left;
+        }
+
+        curr->data = succ->data;
+
+        if (succParent->left == succ)
+            succParent->left = succ->right;
+        else
+            succParent->right = succ->right;
+
+        free(succ);
+    }
+
     return root;
 }
 
-// Inorder traversal (for checking)
+// ================= INORDER =================
 void inorder(struct Node* root) {
-    if (root != NULL) {
-        inorder(root->left);
-        printf("%d ", root->data);
-        inorder(root->right);
-    }
+    if (root == NULL) return;
+
+    inorder(root->left);
+    printf("%d ", root->data);
+    inorder(root->right);
 }
 
-// MAIN
+// ================= MAIN =================
 int main() {
     struct Node* root = NULL;
 
-    // Insert
+    // insert
     root = insert(root, 50);
-    insert(root, 30);
-    insert(root, 70);
-    insert(root, 20);
-    insert(root, 40);
-    insert(root, 60);
-    insert(root, 80);
+    root = insert(root, 30);
+    root = insert(root, 70);
+    root = insert(root, 20);
+    root = insert(root, 40);
+    root = insert(root, 60);
+    root = insert(root, 80);
 
     printf("Inorder: ");
     inorder(root);
 
-    // Search
+    // search
     int key = 40;
     if (search(root, key))
-        printf("\n%d found\n", key);
+        printf("\n%d found", key);
     else
-        printf("\n%d not found\n", key);
+        printf("\n%d not found", key);
 
-    // Delete
-    root = deleteNode(root, 50);
+    // delete
+    root = deleteNode(root, 30);
 
-    printf("After deletion (inorder): ");
+    printf("\nAfter deletion: ");
     inorder(root);
 
     return 0;
