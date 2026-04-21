@@ -1,30 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Node structure
 struct Node {
     int data;
     struct Node* left;
     struct Node* right;
 };
 
-struct Node* createNode(int val) {
-    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
-    temp->data = val;
-    temp->left = temp->right = NULL;
-    return temp;
+// Create node
+struct Node* createNode(int data) {
+    struct Node* newNode = malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = newNode->right = NULL;
+    return newNode;
 }
 
-// Count leaf nodes
-int countLeaf(struct Node* root) {
+// Count leaf nodes (iterative)
+int countLeaves(struct Node* root) {
     if (root == NULL)
         return 0;
 
-    if (root->left == NULL && root->right == NULL)
-        return 1;
+    struct Node* queue[100];
+    int front = 0, rear = 0;
 
-    return countLeaf(root->left) + countLeaf(root->right);
+    queue[rear++] = root;
+    int count = 0;
+
+    while (front < rear) {
+        struct Node* temp = queue[front++];
+
+        // check if leaf
+        if (temp->left == NULL && temp->right == NULL)
+            count++;
+
+        if (temp->left)
+            queue[rear++] = temp->left;
+
+        if (temp->right)
+            queue[rear++] = temp->right;
+    }
+
+    return count;
 }
 
+// Main
 int main() {
     struct Node* root = createNode(1);
     root->left = createNode(2);
@@ -32,9 +52,7 @@ int main() {
     root->left->left = createNode(4);
     root->left->right = createNode(5);
 
-    int result = countLeaf(root);
-
-    printf("Leaf nodes = %d\n", result);
+    printf("Leaf nodes = %d\n", countLeaves(root));
 
     return 0;
 }
